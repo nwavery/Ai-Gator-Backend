@@ -16,10 +16,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
