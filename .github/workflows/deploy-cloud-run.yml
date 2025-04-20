@@ -82,5 +82,5 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --platform managed \
             --quiet \
-            --update-env-vars DB_INSTANCE_CONNECTION_NAME=ad-dev-crm:us-central1:ai-gator-sql,DB_NAME=gator_tools,DB_USER=gator-backend,GCS_BUCKET_NAME=gatorbucket \
-            --update-secrets=DB_PASSWORD=${{ env.DB_PASSWORD_SECRET_NAME }}:latest
+            --update-env-vars DB_INSTANCE_CONNECTION_NAME=ad-dev-crm:us-central1:ai-gator-sql,DB_NAME=gator_tools,DB_USER=gator-backend,GCS_BUCKET_NAME=gatorbucket,KAFKA_BROKERS=pkc-n3603.us-central1.gcp.confluent.cloud:9092 \
+            --update-secrets=DB_PASSWORD=${{ env.DB_PASSWORD_SECRET_NAME }}:latest,KAFKA_API_KEY=agregator-kafka-api-key:latest,KAFKA_API_SECRET=agregator-kafka-api-secret:latest
