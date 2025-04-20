@@ -6,6 +6,7 @@ import com.agregator.backend.model.ToolUpdateRequest;
 import com.agregator.backend.model.ToolCreateRequest;
 import com.agregator.backend.repository.ToolRepository;
 import com.agregator.backend.service.ToolService;
+import com.agregator.backend.service.KafkaProducerService;
 import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -17,21 +18,21 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ToolServiceImpl implements ToolService {
 
     private final ToolRepository toolRepository;
     private final CategoryRepository categoryRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
-    public ToolServiceImpl(ToolRepository toolRepository, CategoryRepository categoryRepository) {
+    public ToolServiceImpl(ToolRepository toolRepository, CategoryRepository categoryRepository, KafkaProducerService kafkaProducerService) {
         this.toolRepository = toolRepository;
         this.categoryRepository = categoryRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     @Override
@@ -122,28 +123,12 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public Tool createTool(ToolCreateRequest createRequest) {
-        // 1. Validate category exists
-        Category category = categoryRepository.findById(createRequest.getCategoryId())
+    public void submitToolForApproval(ToolCreateRequest createRequest) {
+        categoryRepository.findById(createRequest.getCategoryId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Category not found with id: " + createRequest.getCategoryId()));
 
-        // 2. Create new Tool entity
-        Tool newTool = new Tool();
-        newTool.setId(UUID.randomUUID().toString()); // Generate new ID
-        newTool.setName(createRequest.getName());
-        newTool.setDescription(createRequest.getDescription());
-        newTool.setWebsiteUrl(createRequest.getWebsiteUrl());
-        newTool.setAffiliateLink(createRequest.getAffiliateLink());
-        newTool.setCategory(category); // Set the fetched Category
-        newTool.setPricing(createRequest.getPricing());
-        newTool.setTagsFromList(createRequest.getTags()); // Use helper to convert/set tags
-        newTool.setImageUrl(createRequest.getImageUrl());
-        newTool.setUpvotes(0); // Initialize upvotes to 0
-        newTool.setDateAdded(new Date()); // Set current date/time
-
-        // 3. Save the new tool
-        return toolRepository.save(newTool);
+        kafkaProducerService.sendToolSubmission(createRequest);
     }
 
     private Sort createSort(String sortBy) {

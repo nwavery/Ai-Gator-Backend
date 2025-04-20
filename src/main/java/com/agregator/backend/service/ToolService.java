@@ -14,6 +14,6 @@ public interface ToolService {
     // Method to partially update a tool
     Optional<Tool> patchTool(String id, ToolUpdateRequest updateRequest);
     
-    // Method to create a new tool
-    Tool createTool(ToolCreateRequest createRequest);
+    // Renamed method and changed return type to void
+    void submitToolForApproval(ToolCreateRequest createRequest);
 } 

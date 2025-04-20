@@ -104,18 +104,16 @@ public class ToolController {
         return ResponseEntity.ok(updatedTool);
     }
 
-    // New endpoint to create a tool
+    // New endpoint to create a tool (now asynchronous via Kafka)
     @PostMapping
-    public ResponseEntity<Tool> createTool(
+    public ResponseEntity<Void> createTool(
         @Valid @RequestBody ToolCreateRequest createRequest) {
         
-        Tool createdTool = toolService.createTool(createRequest);
+        // Call the service method to validate and submit to Kafka
+        toolService.submitToolForApproval(createRequest);
         
-        // Build the location URI for the newly created resource
-        URI location = URI.create("/api/tools/" + createdTool.getId());
-        
-        // Return 201 Created status with Location header and response body
-        return ResponseEntity.created(location).body(createdTool);
+        // Return 202 Accepted status, indicating request received for processing
+        return ResponseEntity.accepted().build(); 
     }
 
     // Add more endpoints later (e.g., POST for adding tools, GET by ID, etc.)
